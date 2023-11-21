@@ -4,8 +4,8 @@
   "metadata": {
     "_generator": {
       "name": "bicep",
-      "version": "0.22.6.54827",
-      "templateHash": "115935835098698631"
+      "version": "0.23.1.45101",
+      "templateHash": "11320732244475662835"
     }
   },
   "parameters": {
@@ -49,6 +49,32 @@
       "defaultValue": {},
       "metadata": {
         "description": "Tags to apply to environment resources"
+      }
+    },
+    "serverName": {
+      "type": "string",
+      "defaultValue": "[uniqueString('sql', parameters('name'))]",
+      "metadata": {
+        "description": "The name of the SQL logical server."
+      }
+    },
+    "sqlDBName": {
+      "type": "string",
+      "defaultValue": "SampleDB",
+      "metadata": {
+        "description": "The name of the SQL Database."
+      }
+    },
+    "administratorLogin": {
+      "type": "string",
+      "metadata": {
+        "description": "The administrator username of the SQL logical server."
+      }
+    },
+    "administratorLoginPassword": {
+      "type": "securestring",
+      "metadata": {
+        "description": "The administrator password of the SQL logical server."
       }
     }
   },
@@ -151,6 +177,29 @@
         "[resourceId('Microsoft.Insights/components', parameters('name'))]",
         "[resourceId('Microsoft.Web/serverfarms', parameters('name'))]",
         "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAcctName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Sql/servers",
+      "apiVersion": "2022-05-01-preview",
+      "name": "[parameters('serverName')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "administratorLogin": "[parameters('administratorLogin')]",
+        "administratorLoginPassword": "[parameters('administratorLoginPassword')]"
+      }
+    },
+    {
+      "type": "Microsoft.Sql/servers/databases",
+      "apiVersion": "2022-05-01-preview",
+      "name": "[format('{0}/{1}', parameters('serverName'), parameters('sqlDBName'))]",
+      "location": "[parameters('location')]",
+      "sku": {
+        "name": "Standard",
+        "tier": "Standard"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', parameters('serverName'))]"
       ]
     }
   ]
